@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05070b"><meta name="description" content="映画の余韻をぶっ壊せ。エンドロールをスワイプで飛ばし、最速のTHE ENDを目指すブラウザゲーム。株式会社こす.くまのFLIP ORIGINAL。">
+  <meta property="og:title" content="ENDROLL RTA — 映画の余韻をぶっ壊せ。"><meta property="og:description" content="見届けるものを、飛ばすものへ。スマホとPCで遊べるエンドロール・タイムアタック。"><meta property="og:type" content="website">
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css">
+  <title>ENDROLL RTA — 映画の余韻をぶっ壊せ。</title>
+</head>
+<body data-screen="title">
+  <div class="grain" aria-hidden="true"></div>
+  <header class="masthead"><a class="brand" href="https://kosukuma.com/home.html" target="_blank" rel="noopener" aria-label="株式会社こす.くま 公式サイト"><span class="brand-mecha" aria-hidden="true"><img src="./assets/kosukuma-mecha-header.png" alt="" width="96" height="64"></span></a><div class="header-actions"><button id="settings-open" class="settings-button" aria-label="設定"><span aria-hidden="true">⚙</span> 設定</button><button id="sound" class="sound-button" aria-pressed="true"><span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span id="sound-label">SOUND ON</span></button></div></header>
+  <main>
+    <section id="title-screen" class="screen title-screen" aria-labelledby="game-title">
+      <div class="title-content">
+        <h1 id="game-title" class="arcade-logo" aria-label="ENDROLL RTA"><span class="logo-word" data-text="ENDROLL" aria-hidden="true">ENDROLL</span><span class="logo-subline" aria-hidden="true"><i class="logo-spark">✦</i><span class="logo-word logo-rta" data-text="RTA">RTA</span><i class="logo-chevrons">›››</i></span></h1>
+        <p class="catchphrase">映画の余韻をぶっ壊せ。</p>
+        <div class="arcade-menu">
+          <button id="start" class="arcade-button start-button"><span class="button-spark" aria-hidden="true">✦</span><span>ゲームスタート</span><span class="button-chevrons" aria-hidden="true">›››</span></button>
+          <button id="help-open" class="arcade-button help-button"><span class="button-spark" aria-hidden="true">✦</span><span>遊び方</span><span class="button-chevrons" aria-hidden="true">›››</span></button>
+          <button id="records-open" class="records-button"><span>自己ベスト</span><strong id="title-best">—</strong><span aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+    </section>
+    <section id="intro-screen" class="screen intro-screen" hidden aria-label="映画館の客席からスクリーンへ入る開始演出"><canvas id="cinema-canvas" aria-hidden="true"></canvas><p class="cinema-caption">THE MOVIE HAS ENDED.</p></section>
+    <section id="game-screen" class="screen game-screen" hidden aria-label="エンドロールを飛ばすゲーム">
+      <canvas id="roll" aria-label="架空の映画のスタッフロール。上スワイプで進み、下スワイプで戻る。PCはホイールまたは上下矢印キー"></canvas>
+      <div class="game-vignette" aria-hidden="true"></div>
+      <div class="progress-track" aria-hidden="true"><div id="progress-fill"></div></div>
+      <div class="hud"><button id="exit-run" class="exit-run" aria-label="プレイを中断">×</button><div class="timer-block"><span class="eyebrow">TIME TO THE END</span><div class="timer"><span id="timer">0.000</span><small>s</small></div></div><span id="progress-text" class="mono">0%</span></div>
+      <div class="goal-marker mono" aria-hidden="true"><span>FINISH LINE</span><i></i></div>
+      <div id="cut-message" class="cut-message" aria-live="polite"></div>
+      <button id="secret-skip" class="secret-skip" aria-label="SKIP" hidden>SKIP</button><div class="game-bottom"><div class="speed-panel"><div class="speed-heading"><span class="eyebrow">SCROLL VELOCITY</span><span class="mono"><b id="speed">1.0</b> ×</span></div><div class="speed-segments" id="speed-segments" aria-hidden="true"></div><p id="control-hint">上へ進む / 下へ戻る · PCは ↑ / ↓</p></div></div>
+      <output id="debug" hidden></output>
+    </section>
+    <section id="result-screen" class="screen result-screen" hidden aria-labelledby="result-heading"><div class="result-content">
+      <div class="eyebrow result-kicker"><span class="live-dot"></span> THAT'S A WRAP.</div>
+      <h2 id="result-heading" class="arcade-heading" aria-label="THE END"><span class="logo-word" data-text="THE END" aria-hidden="true">THE END</span></h2><p class="result-sub">余韻、終了。</p>
+      <div class="result-time"><span id="result-time">00.000</span><small>sec</small></div><div class="record-line"><span id="new-best" class="badge">NEW PERSONAL BEST</span><span id="result-mode" class="mono"></span></div>
+      <div id="reward-badge" class="reward-badge" hidden><span id="reward-percent" class="reward-percent"></span><div><strong id="reward-title"></strong><span id="reward-rule"></span></div><span class="reward-emblem" aria-hidden="true">✦</span></div>
+      <div class="result-stats"><div><span>最高速度</span><strong id="result-speed">—</strong></div><div><span>自己ベスト</span><strong id="result-best">—</strong></div></div>
+      <div class="reaction"><div class="kuma-frame"><img id="result-kuma" src="./assets/kosukuma-front.png" alt="こすくまくん" width="74" height="74"></div><div><span id="rank" class="rank">余韻クラッシャー</span><p id="reaction-text">もう終わり？ポップコーン残ってるよ。</p></div><span class="reaction-symbol" aria-hidden="true">✦</span></div>
+      <button id="retry" class="arcade-button action-button"><span class="button-spark" aria-hidden="true">✦</span><span>もう一度、飛ばす</span><span class="button-chevrons" aria-hidden="true">›››</span></button>
+      <div class="share-actions"><button id="share">記録をシェア ↗</button><button id="save-image">画像を保存 ↓</button></div>
+      <button id="to-title" class="text-button">タイトルへ戻る</button><p id="result-note" class="result-note">記録はこのブラウザに、入力方式ごとに保存されます。</p><p id="reward-basis" class="result-note reward-basis" hidden>タイム基準の目安ランクです。参加者の実測順位ではありません。</p>
+    </div></section>
+  </main>
+  <dialog class="arcade-dialog" id="settings-dialog" aria-labelledby="settings-heading"><div class="dialog-head"><span class="eyebrow">SETTINGS</span><button class="close-dialog" aria-label="閉じる">×</button></div><h2 id="settings-heading">設定</h2><button id="cinema-setting" class="setting-toggle" aria-pressed="true"><span><strong>映画館の開始演出</strong><small>客席からスクリーンの中へ。</small></span><b id="cinema-state">ON</b></button><p class="settings-note">OFFにすると、すぐにプレイ開始。<br>演出中はタイムに含まれません。</p><button id="motion" class="motion-setting" aria-label="動きを控えめにする" aria-pressed="false">動きを控えめに <span aria-hidden="true">◐</span></button><p class="settings-note">動きを控えめにすると、開始時のズームも省略します。</p></dialog>
+  <dialog class="arcade-dialog" id="help-dialog"><div class="dialog-head"><span class="eyebrow">HOW TO SKIP</span><button class="close-dialog" aria-label="閉じる">×</button></div><h2>遊び方</h2><div class="how-step"><span>01</span><div><h3>上にスワイプして加速。</h3><p>下から上へ、強く、続けて。PCは上ドラッグ・ホイール・トラックパッド、または Space / ↑ 長押し。</p></div></div><div class="how-step"><span>02</span><div><h3>見逃したら、下へ戻ろう。</h3><p>下スワイプ・逆スクロール・↓ 長押しで巻き戻し。光るSKIPをタップすると大きく進みます。戻っている間もタイマーは進みます。</p></div></div><div class="how-step"><span>03</span><div><h3>自分の記録を、追い越そう。</h3><p>THE END がラインを越えた瞬間にゴール。コースとSKIPの位置は毎回同じ。最短ルートを探そう。</p></div></div><div class="rules-note">入力方式別に自己ベストを保存。複数方式を使うと「ミックス」になります。別タブへの移動や長い処理停止は記録を無効にし、やり直しになります。</div><button id="help-play" class="arcade-button action-button"><span class="button-spark" aria-hidden="true">✦</span><span>わかった、飛ばす</span><span class="button-chevrons" aria-hidden="true">›››</span></button></dialog>
+  <dialog class="arcade-dialog" id="records-dialog"><div class="dialog-head"><span class="eyebrow">PERSONAL RECORDS</span><button class="close-dialog" aria-label="閉じる">×</button></div><h2>自分を、追い越せ。</h2><div id="record-list"></div><p class="rules-note">このブラウザ内の記録です。オンラインランキングはありません。コース v1.5 / 同じ入力方式同士で比較してください。</p></dialog>
+  <dialog class="arcade-dialog" id="interrupt-dialog"><h2 class="arcade-heading" aria-label="TAKE TWO"><span class="logo-word" data-text="TAKE TWO" aria-hidden="true">TAKE TWO</span></h2><p class="pause-subtitle">もう一度、いこう。</p><p id="interrupt-reason">プレイを中断しました。この回の記録は保存されません。</p><button id="interrupt-retry" class="arcade-button action-button"><span class="button-spark" aria-hidden="true">✦</span><span>最初から飛ばす</span><span class="button-chevrons" aria-hidden="true">›››</span></button><button id="interrupt-title" class="text-button">タイトルへ戻る</button></dialog>
+  <div id="toast" role="status"></div>
+  <div id="result-celebration" class="celebration" aria-hidden="true" hidden><canvas></canvas><div class="reward-hero"><span class="reward-hero-kicker">SINGULARITY ACHIEVED</span><div class="reward-hero-score"><strong class="reward-hero-number">1</strong><span>%</span></div><span class="reward-hero-class">TOP CLASS · 相当</span><strong class="reward-hero-title">余韻、消滅。</strong></div></div>
+  <script type="module" src="./src/main.js"></script>
+</body></html>
