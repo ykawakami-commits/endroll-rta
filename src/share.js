@@ -19,10 +19,10 @@ export async function makeShareImage(record) {
   c.fillStyle='#a2c0d7';c.font=`400 19px ${VISUAL.uiFont}`;c.fillText(`${MODES[record.mode]}  /  COURSE v${CONFIG.version}`,66,492);
   c.strokeStyle='#00e5ff';c.beginPath();c.moveTo(802,140);c.lineTo(802,514);c.stroke();
   const img=new Image();img.src=new URL(`../assets/kosukuma-${r.asset}.png`,import.meta.url).href;
-  await img.decode(); c.save();c.beginPath();c.arc(976,235,65,0,Math.PI*2);c.clip();c.fillStyle='#fff';c.fillRect(906,165,140,140);const scale=Math.min(116/img.width,116/img.height);c.drawImage(img,976-img.width*scale/2,235-img.height*scale/2,img.width*scale,img.height*scale);c.restore();
+  await img.decode(); c.save();c.beginPath();c.arc(976,220,105,0,Math.PI*2);c.clip();c.fillStyle='#fff';c.fillRect(866,110,220,220);const scale=Math.min(195/img.width,195/img.height);c.drawImage(img,976-img.width*scale/2,220-img.height*scale/2,img.width*scale,img.height*scale);c.restore();
   c.textAlign='center';c.fillStyle='#eee';c.font=`700 20px ${VISUAL.uiFont}`;c.fillText(r.rank,978,350);
-  c.fillStyle=tier.color;c.font=`700 27px ${VISUAL.displayFont}`;c.fillText(tier.level?`TOP ${tier.percent}%`:'RUN COMPLETE',978,401);
-  c.fillStyle='#8aacc5';c.font=`400 13px ${VISUAL.uiFont}`;c.fillText(tier.level?'相当 / タイム基準の目安':'THE END.  余韻、終了。',978,431);
+  c.fillStyle=tier.color;c.font=`700 27px ${VISUAL.displayFont}`;c.fillText(record.online?`${record.online.rank}位 / ${record.online.total}人`:`称号 ${tier.grade}`,978,401);
+  c.fillStyle='#8aacc5';c.font=`400 13px ${VISUAL.uiFont}`;c.fillText(record.online?'オンライン順位 / 記録登録時点':'タイム称号 / 同じ基準で挑戦',978,431);
   c.textAlign='left';c.fillStyle='#789ab6';c.font='400 13px "IBM Plex Mono",monospace';c.fillText('THE END IS YOUR START.',66,563);
   return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Image unavailable')),'image/png'));
 }

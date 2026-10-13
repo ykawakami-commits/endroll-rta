@@ -5,7 +5,7 @@ export class Celebration {
   play(tier,reduced=false){
     this.stop();if(!tier.level||reduced)return;
     this.tier=tier;this.resize();window.addEventListener('resize',this.resize);this.layer.dataset.level=String(tier.level);
-    this.layer.querySelector('.reward-hero-number').textContent=tier.percent;
+    this.layer.querySelector('.reward-hero-number').textContent=tier.grade;
     this.layer.querySelector('.reward-hero-title').textContent=tier.hero;
     this.layer.querySelector('.reward-hero-kicker').textContent=tier.level===4?'SINGULARITY ACHIEVED':'OVERDRIVE';
     const count=[0,8,34,120,330][tier.level];let seed=28933;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};

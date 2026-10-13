@@ -8,13 +8,15 @@ import {reaction,makeShareImage} from './share.js';
 import {rewardFor} from './rewards.js';
 import {Celebration} from './celebration.js';
 import {Cinema} from './cinema.js';
+import {Ranking} from './ranking.js';
 const $=id=>document.getElementById(id);
 const prefs=load();const audio=new Sound(prefs.sound);const reducedQuery=matchMedia('(prefers-reduced-motion: reduce)');
 const celebration=new Celebration($('result-celebration'));
 const cinema=new Cinema($('cinema-canvas'));
 let reduced=prefs.reduced||reducedQuery.matches;
 let state='title',run=null,renderer=null,last=0,accumulator=0,frameId=0,introTimer=0,finishTimer=0,toastTimer=0,cutTimer=0;
-let pointer=null,result=null,shareBlob=null,pendingStart=0,fps=60;
+let pointer=null,result=null,shareBlob=null,pendingStart=0,fps=60,rankingTicket=null;
+const ranking=new Ranking(record=>{if(record===result)shareBlob=null;});
 const debug=new URLSearchParams(location.search).has('debug');
 for(let i=0;i<30;i++) $('speed-segments').append(document.createElement('i'));
 const segments=[...$('speed-segments').children];
@@ -40,7 +42,7 @@ $('records-open').onclick=()=>{const list=$('record-list');list.replaceChildren(
 function clearInteraction(){pointer=null;if(run){run.keyboardDown=false;run.keyboardReverse=false;run.cancelGate();}}
 function clearRunTimers(){clearTimeout(introTimer);clearTimeout(finishTimer);clearTimeout(cutTimer);cancelAnimationFrame(frameId);cinema.stop();clearInteraction();pendingStart++;}
 function start(isRetry=false){
-  clearRunTimers();for(const d of document.querySelectorAll('dialog[open]'))d.close();audio.unlock();audio.start();run=new Run();result=null;shareBlob=null;accumulator=0;$('cut-message').classList.remove('visible');$('secret-skip').hidden=true;
+  clearRunTimers();for(const d of document.querySelectorAll('dialog[open]'))d.close();audio.unlock();audio.start();run=new Run(true);rankingTicket=ranking.prepareRun();result=null;shareBlob=null;accumulator=0;$('cut-message').classList.remove('visible');$('secret-skip').hidden=true;
   setScreen('intro');const token=pendingStart;
   const begin=()=>{if(token!==pendingStart||state!=='intro')return;setScreen('game');if(!renderer)renderer=new Renderer($('roll'));else renderer.resize();renderer.particles=[];last=performance.now();updateHUD();renderer.draw(run,0,reduced);frameId=requestAnimationFrame(frame);};
   const cinematic=!isRetry&&prefs.cinema&&!reduced;$('intro-screen').classList.toggle('cinema-cut',!cinematic);
@@ -118,16 +120,16 @@ function showResult(saved){
   setScreen('result');const r=reaction(result.time,result.cuts);$('result-time').textContent=formatTime(result.time);$('result-mode').textContent=MODES[result.mode];$('new-best').textContent=result.isBest?'NEW PERSONAL BEST':'RUN COMPLETE';$('result-speed').textContent=(result.maxSpeed/CONFIG.baseSpeed).toFixed(1)+' ×';$('result-best').textContent=formatTime(best(prefs.records,result.mode))+' s';$('rank').textContent=r.rank;$('reaction-text').textContent=r.comment;$('result-kuma').src=`./assets/kosukuma-${r.asset}.png`;$('result-note').textContent=saved?'記録はこのブラウザに、入力方式ごとに保存されます。':'このブラウザでは保存できませんでした。画像で記録を残せます。';
   $('result-heading').setAttribute('tabindex','-1');$('result-heading').focus({preventScroll:true});
   const tier=rewardFor(result.time);$('result-screen').dataset.reward=tier.id;$('reward-badge').hidden=!tier.level;$('reward-basis').hidden=!tier.level;
-  $('reward-percent').textContent=`TOP ${tier.percent}%`; $('reward-title').textContent=tier.title;$('reward-rule').textContent=`上位${tier.percent}%相当 · ${tier.maxTime.toFixed(1)}秒以内`;
+  $('reward-percent').textContent=tier.grade; $('reward-title').textContent=tier.title;$('reward-rule').textContent=`タイム称号 · ${tier.maxTime.toFixed(1)}秒以内`;
   celebration.play(tier,reduced);audio.reward(tier.level);
-  const record=result;makeShareImage(record).then(blob=>{if(record===result)shareBlob=blob;}).catch(()=>{});
+  ranking.showResult(result,run,rankingTicket);
 }
 async function getBlob(){return shareBlob||(shareBlob=await makeShareImage(result));}
 function download(blob){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`ENDROLL-RTA-${formatTime(result.time)}s.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 $('save-image').onclick=async()=>{const button=$('save-image');button.disabled=true;try{download(await getBlob());toast('結果画像を保存しました');}catch{toast('画像を作成できませんでした。もう一度お試しください。');}finally{button.disabled=false;}};
 $('share').onclick=async()=>{
   if(!result)return;const button=$('share');button.disabled=true;
-  const shareURL=location.origin+location.pathname;const text=`ENDROLL RTA ${formatTime(result.time)}秒｜${reaction(result.time,result.cuts).rank}\n${MODES[result.mode]}\n映画の余韻をぶっ壊せ。 #ENDROLLRTA #こすくま`;
+  const shareURL=location.origin+location.pathname;const online=result.online?`オンライン ${result.online.rank}位 / ${result.online.total}人\n`:'';const text=`ENDROLL RTA ${formatTime(result.time)}秒｜${reaction(result.time,result.cuts).rank}\n${MODES[result.mode]}\n${online}映画の余韻をぶっ壊せ。 #ENDROLLRTA #こすくま`;
   try{
     const blob=await getBlob();const file=new File([blob],'endroll-rta.png',{type:'image/png'});
     if(navigator.share&&navigator.canShare?.({files:[file]}))await navigator.share({files:[file],title:'ENDROLL RTA',text,url:shareURL});

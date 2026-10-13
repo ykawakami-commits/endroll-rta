@@ -1,13 +1,15 @@
 import { CONFIG, forwardVelocity } from './config.js';
 import { COURSE, offsetAt, layoutCourse } from './credits.js';
 export class Run {
-  constructor() {
+  constructor(captureReplay = false) {
+    this.tick=0;this.replay=captureReplay?[]:null;this.replayOverflow=false;
     this.distance = 0; this.speed = CONFIG.baseSpeed; this.time = 0; this.rewinding = false;
     this.cuts = []; this.used = new Set(); this.modes = new Set(); this.finished = false;
     this.goal = COURSE.goal; this.rows = layoutCourse([]); this.maxSpeed = 0;
     this.inputs = 0;this.pressedGate=null;this.inputAge=Infinity;this.coastDelay=CONFIG.coastDelay;
     this.events = []; this.keyboardDown = false; this.keyboardReverse = false; this.keyCooldown = 0;
   }
+  record(...event){if(!this.replay||this.finished)return;if(this.replay.length>=12000){this.replayOverflow=true;return;}this.replay.push([this.tick,...event]);}
   get mode() { return this.modes.size > 1 ? 'mixed' : [...this.modes][0] || 'auto'; }
   get cutDistance() { return this.cuts.reduce((n, c) => n + c.end - c.start, 0); }
   impulse(amount, mode) {
@@ -17,6 +19,7 @@ export class Run {
     const from=reverse?Math.min(0,this.speed):Math.max(CONFIG.baseSpeed,this.speed);
     const delta=reverse?amount*CONFIG.rewindGain:amount;
     if(!Number.isFinite(from+delta))return 0;
+    this.record('i',amount,mode);
     this.rewinding=reverse;
     this.speed=reverse?Math.max(-CONFIG.rewindMaxSpeed,from+delta):forwardVelocity(from,amount);
     const applied=this.speed-from;this.maxSpeed=Math.max(this.maxSpeed,this.speed);
@@ -35,9 +38,9 @@ export class Run {
     if (this.finished || !gate || gate.id !== id || this.used.has(id)) return false;
     return this.cutGate(gate);
   }
-  pressGate(id){const gate=this.activeGate();this.pressedGate=gate?.id===id?{gate,time:this.time}:null;}
-  cancelGate(){this.pressedGate=null;}
-  releaseGate(){const pressed=this.pressedGate;this.cancelGate();if(!pressed||this.time-pressed.time>.4)return false;return this.cutGate(pressed.gate);}
+  pressGate(id){this.record('p',id);const gate=this.activeGate();this.pressedGate=gate?.id===id?{gate,time:this.time}:null;}
+  cancelGate(){if(this.pressedGate)this.record('c');this.pressedGate=null;}
+  releaseGate(){this.record('r');const pressed=this.pressedGate;this.pressedGate=null;if(!pressed||this.time-pressed.time>.4)return false;return this.cutGate(pressed.gate);}
   cutGate(gate){
     if(this.finished||this.used.has(gate.id))return false;
     const start=offsetAt(gate.start,this.cuts),end=offsetAt(gate.end,this.cuts);
@@ -50,7 +53,7 @@ export class Run {
     this.rows = layoutCourse(this.cuts);
     this.events.push({ type: 'cut', id, amount: gate.end - gate.start }); return true;
   }
-  gateDown() { const g=this.activeGate(); if(g) return this.activate(g.id); return false; }
+  gateDown() { this.record('g');const g=this.activeGate(); if(g) return this.activate(g.id); return false; }
   step(dt = CONFIG.step) {
     if (this.finished) return;
     this.keyCooldown -= dt;
@@ -69,6 +72,7 @@ export class Run {
       };
     };
     const movement=motion(dt),travel=movement.travel;
+    this.tick++;
     const remaining = this.goal - this.distance;
     if (travel >= remaining) {
       let lo = 0, hi = dt;
